@@ -12,6 +12,12 @@ export default function IndexPage() {
   return (
     <div>
       <h1>Unlock with Next.js & Magic</h1>
+      <p>
+        View on github:{" "}
+        <a href="https://github.com/youfoundron/unlock-with-nextjs-and-magic">
+          https://github.com/youfoundron/unlock-with-nextjs-and-magic
+        </a>
+      </p>
       {userIsLoading && <Spinner />}
       {userIsLoggedIn && <UserInfo />}
       {userIsLoggedOut && <LoginForm />}
