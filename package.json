@@ -14,6 +14,8 @@
     "@magic-sdk/provider": "^18.2.0",
     "@unlock-protocol/networks": "^0.0.15",
     "@unlock-protocol/paywall": "^0.6.4",
+    "@unlock-protocol/unlock-js": "^0.38.3",
+    "ethers": "^5.7.2",
     "magic-sdk": "^18.2.0",
     "next": "^13.4.7",
     "react": "^18.2.0",

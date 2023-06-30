@@ -59,7 +59,7 @@ export const UserProvider: React.FC<React.PropsWithChildren> = ({
     setUser(null);
   }, [magic, setUser]);
 
-  // Hydrate the user state on mount
+  // Hydrate the user state once component is mounted
   useEffect(() => {
     _hydateUserState();
     // Add an empty dependency array so the useEffect only runs once upon page load

@@ -14,6 +14,7 @@ export const MagicProvider: React.FC<React.PropsWithChildren> = ({
 }) => {
   const [magic, setMagic] = useState<MagicSDK>();
 
+  // Hydrate magic instance once component is mounted
   useEffect(() => {
     const { magic } = require("@/lib/magic");
     setMagic(magic);

@@ -9,7 +9,7 @@ const createMagic = (key: string) => {
   // We make sure that the window object is available
   // Then we create a new instance of Magic using a publishable key
   if (typeof window === "undefined") return
-  return new Magic(key);
+  return new Magic(key, { network: 'goerli' });
 };
 
 // Pass in your publishable key from your .env file
