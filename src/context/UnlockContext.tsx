@@ -15,6 +15,7 @@ const initialPaywallConfig: PaywallConfig = {
   locks: {
     [PUBLIC_LOCK_CONTRACT]: {
       name: "Unlock + Magic",
+      network: PUBLIC_LOCK_NETWORK,
     },
   },
   autoconnect: false,

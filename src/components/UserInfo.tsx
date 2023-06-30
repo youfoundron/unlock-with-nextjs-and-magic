@@ -4,23 +4,23 @@ import { useCallback } from "react";
 
 export const UserInfo = () => {
   const { user, logout } = useUser();
-  const { paywall, paywallConfig, wallet } = useUnlock();
+  const { paywall, userHasKey } = useUnlock();
 
-  if (!user || !paywall || !wallet) {
+  if (!user || !paywall) {
     throw Error('Cannot render component without context variables')
   }
 
   const handleCheckout = useCallback(() => {
-    paywall.loadCheckoutModal(paywallConfig)
-  }, [paywall, paywallConfig])
+    paywall.loadCheckoutModal()
+  }, [paywall])
 
   return (
     <div>
       <p>
         Logged in with account <code>{user.publicAddress}</code>
       </p>
+      {!userHasKey && <button onClick={handleCheckout}>Get Key</button>}
       <button onClick={logout}>Logout</button>
-      <button onClick={handleCheckout}>Checkout</button>
     </div>
   );
 };
