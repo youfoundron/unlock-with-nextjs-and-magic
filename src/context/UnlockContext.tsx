@@ -1,18 +1,30 @@
 import { createContext, useState, useEffect, useCallback } from "react";
-import { ethers } from "ethers";
 import { Paywall } from "@unlock-protocol/paywall";
 import { Web3Service } from "@unlock-protocol/unlock-js";
+import { mainnet, goerli } from "@unlock-protocol/networks";
 import { useMagic } from "@/hooks/useMagic";
 import { useUser } from "@/hooks/useUser";
 import { web3Service } from "@/lib/web3Service";
 import { PaywallConfig, paywall } from "@/lib/paywall";
 
+export const publicLockNetwork = parseInt(process.env.NEXT_PUBLIC_LOCK_NETWORK);
+export const publicLockContract = process.env.NEXT_PUBLIC_LOCK_CONTRACT;
+export const getUnlockNetworkConfig = (networkId: number) => {
+  if (networkId === 1) {
+    return mainnet;
+  } else if (networkId === 5) {
+    return goerli
+  } else {
+    throw new Error(`Network id is unsupported: ${networkId}`);
+  }
+}
+
 const initialPaywallConfig: PaywallConfig = {
-  network: parseInt(process.env.NEXT_PUBLIC_LOCK_NETWORK),
+  network: publicLockNetwork,
   locks: {
-    [process.env.NEXT_PUBLIC_LOCK_CONTRACT]: {
+    [publicLockContract]: {
       name: "Unlock + Magic",
-      network: parseInt(process.env.NEXT_PUBLIC_LOCK_NETWORK),
+      network: publicLockNetwork,
     },
   },
   autoconnect: false,
@@ -23,14 +35,16 @@ type UnlockContextType = {
   paywall: Paywall;
   paywallConfig: PaywallConfig;
   web3Service: Web3Service;
-  userHasKey: boolean;
+  hasValidKey: boolean;
+  loading: boolean;
 };
 
 export const UnlockContext = createContext<UnlockContextType>({
   paywall: paywall!,
   paywallConfig: initialPaywallConfig,
   web3Service: web3Service!,
-  userHasKey: false,
+  hasValidKey: false,
+  loading: true,
 });
 
 export const UnlockProvider: React.FC<React.PropsWithChildren> = ({
@@ -40,9 +54,10 @@ export const UnlockProvider: React.FC<React.PropsWithChildren> = ({
   const { magic } = useMagic();
   const [web3Service, setWeb3Service] = useState<Web3Service>();
   const [paywall, setPaywall] = useState<Paywall>();
-  const [paywallConfig, setPaywallConfig] =
+  const [paywallConfig] =
     useState<PaywallConfig>(initialPaywallConfig);
-  const [userHasKey, setUserHasKey] = useState(false);
+  const [hasValidKey, setHasValidKey] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Hydrate paywall & web3Service instances once on mount
   useEffect(() => {
@@ -67,24 +82,28 @@ export const UnlockProvider: React.FC<React.PropsWithChildren> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [magic, user]);
 
-  // Create function that hydrates the userHasKey state variable
-  const checkUserHasKey = useCallback(async () => {
+  // Create function that hydrates the hasValidKey state variable
+  const checkHasValidKey = useCallback(async () => {
     if (user?.publicAddress && web3Service) {
-      const lock = await web3Service.getLockContract(
-        process.env.NEXT_PUBLIC_LOCK_CONTRACT,
-        new ethers.providers.Web3Provider(magic.rpcProvider as any)
-      );
-      // TODO: query lock contract against user.address
-      // ie, const hasKey = await lock.callStatic.???()
-      const hasKey = false;
-      setUserHasKey(hasKey);
+      setLoading(true);
+      try {
+        const hasValidKey = await web3Service.getHasValidKey(
+          publicLockContract,
+          user.publicAddress,
+          publicLockNetwork
+        );
+        setHasValidKey(hasValidKey);
+      } catch (error) {
+        /* no-op */
+      }
     }
-  }, [user, web3Service, magic]);
+    setLoading(false);
+  }, [user, web3Service]);
 
   // Check if connected user has key for lock
   useEffect(() => {
-    checkUserHasKey();
-  }, [checkUserHasKey])
+    checkHasValidKey();
+  }, [checkHasValidKey]);
 
   if (!paywall || !web3Service) {
     return null;
@@ -96,7 +115,8 @@ export const UnlockProvider: React.FC<React.PropsWithChildren> = ({
         web3Service,
         paywall,
         paywallConfig,
-        userHasKey,
+        hasValidKey,
+        loading
       }}
     >
       {children}
