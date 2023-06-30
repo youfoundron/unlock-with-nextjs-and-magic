@@ -2,20 +2,17 @@ import { createContext, useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
 import { Paywall } from "@unlock-protocol/paywall";
 import { Web3Service } from "@unlock-protocol/unlock-js";
-import { PaywallConfig, paywall } from "@/lib/paywall";
 import { useMagic } from "@/hooks/useMagic";
-import { web3Service } from "@/lib/web3Service";
 import { useUser } from "@/hooks/useUser";
-
-const PUBLIC_LOCK_NETWORK = 5;
-const PUBLIC_LOCK_CONTRACT = '0x4aac1f8cdb47520f27e193a568e441ba2f4d8658';
+import { web3Service } from "@/lib/web3Service";
+import { PaywallConfig, paywall } from "@/lib/paywall";
 
 const initialPaywallConfig: PaywallConfig = {
-  network: PUBLIC_LOCK_NETWORK, // (network 1 is for mainnet, 5 is for goerli, etc)
+  network: parseInt(process.env.NEXT_PUBLIC_LOCK_NETWORK),
   locks: {
-    [PUBLIC_LOCK_CONTRACT]: {
+    [process.env.NEXT_PUBLIC_LOCK_CONTRACT]: {
       name: "Unlock + Magic",
-      network: PUBLIC_LOCK_NETWORK,
+      network: parseInt(process.env.NEXT_PUBLIC_LOCK_NETWORK),
     },
   },
   autoconnect: false,
@@ -74,7 +71,7 @@ export const UnlockProvider: React.FC<React.PropsWithChildren> = ({
   const checkUserHasKey = useCallback(async () => {
     if (user?.publicAddress && web3Service) {
       const lock = await web3Service.getLockContract(
-        PUBLIC_LOCK_CONTRACT,
+        process.env.NEXT_PUBLIC_LOCK_CONTRACT,
         new ethers.providers.Web3Provider(magic.rpcProvider as any)
       );
       // TODO: query lock contract against user.address
